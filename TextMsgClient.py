@@ -1,3 +1,6 @@
+# Filename: TextMsgClient.py
+# Description: File for text chat client
+
 import socket, threading, time
 from tkinter import *
 
@@ -6,13 +9,8 @@ text_color = "#A9A9A9"
 bg_bottom = "#686A68"
 bg_entry = "#2C3E50"
 ping_color = "#6BFF64"
-# I used my public ip for the host_ip. If the following is being ran on another computer,
-# and the server is not being ran on my computer please use socket.gethostbyname(socket.gethostname())
-# for both server and client. If the following command does not work, replace this with your device's
-# ipv4 address.
-host_ip = '96.250.48.132' # socket.gethostbyname(socket.gethostname())
-# '96.250.48.132'
-# '192.168.1.171'
+
+host_ip = socket.gethostbyname(socket.gethostname())
 chatPort = 55555
 
 class ChatClient:

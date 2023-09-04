@@ -1,3 +1,6 @@
+# Filename: ChatClient.py
+# Description: File for text, video, and voice chat client
+
 import cv2, imutils, socket, numpy as np, time, threading, pyaudio
 from tkinter import *
 
@@ -6,7 +9,7 @@ ping_color = "#6BFF64"
 text_color = "#A9A9A9"
 bg_bottom = "#686A68"
 bg_entry = "#2C3E50"
-host_ip = '96.250.48.132'
+host_ip = socket.gethostbyname(socket.gethostname())
 chatPort = 55555
 videoPort = 55666
 audioPort = 55777
@@ -18,7 +21,7 @@ audio_format = pyaudio.paInt16
 channels = 1
 # Record at 44100 samples per second
 fs = 44100
-# Number of seconds to record (Play audio every 0.1 sec)
+# Number of seconds to record audio before sending
 seconds = 0.1
 
 class ChatClient:
