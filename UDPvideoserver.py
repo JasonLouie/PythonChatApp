@@ -1,8 +1,11 @@
+# Filename: UDPvideoserver.py
+# Description: File for UDP video chat server
+
 import socket, time, threading
 from tkinter import *
 
 buffer_size = 65536
-host_ip = '192.168.1.171' # socket.gethostbyname(socket.gethostname())
+host_ip = socket.gethostbyname(socket.gethostname())
 videoPort = 55666
 
 class User:

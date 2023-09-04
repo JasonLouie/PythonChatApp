@@ -1,11 +1,10 @@
+# Filename: TCPaudioserver.py
+# Description: File for voice chat server
+
 import pyaudio, socket, threading, time
 from tkinter import *
 
-# socket.gethostbyname(socket.gethostname())
-# The above line of code receives the ipv4 address of the client that this program is running on.
-# I had to change it to 192.168.1.171 since the line of code above started returning the wrong ipv4 address
-# This assumes that the server is being ran on my computer.
-host = '192.168.1.171'
+host = socket.gethostbyname(socket.gethostname())
 chunk = 1024
 # 16 bits per sample
 audio_format = pyaudio.paInt16
@@ -84,6 +83,7 @@ class AudioServer:
     def sendAudio(self, audio, sender: User):
         for client in self.clients:
             if client != sender:
+                # Note: the .sendAudio for client is the method from the Users class.
                 try:
                     client.sendAudio(audio)
                 except:

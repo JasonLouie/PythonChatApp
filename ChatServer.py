@@ -1,11 +1,9 @@
-# Final implementation of chatserver with audio and video streaming as well as text messaging
+# Filename: ChatClient.py
+# Description: File for text, video, and voice chat server
+
 import threading, socket, time
 
-# socket.gethostbyname(socket.gethostname())
-# The above line of code receives the ipv4 address of the client that this program is running on.
-# I had to change it to 192.168.1.171 since the line of code above started returning the wrong ipv4 address
-# This assumes that the server is being ran on my computer.
-host = '192.168.1.171'
+host = socket.gethostbyname(socket.gethostname())
 chatPort = 55555
 videoPort = 55666
 audioPort = 55777

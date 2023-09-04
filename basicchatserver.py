@@ -1,6 +1,9 @@
-import socket, threading, time, subprocess
+# Filename: basicchatserver.py
+# Description: File for the terminal text chat server
 
-host_ip = '192.168.1.171'
+import socket, threading
+
+host = socket.gethostbyname(socket.gethostname())
 port = 55555
 
 class User:
@@ -23,8 +26,8 @@ class Server:
         self.clients = []
 
     def run(self):
-        print(f"Listening for connections at {host_ip}...")
-        self.text_server.bind((host_ip,port))
+        print(f"Listening for connections at {host}...")
+        self.text_server.bind((host,port))
         self.text_server.listen()
         receiveThread = threading.Thread(target=self.receive, daemon=True)
         receiveThread.start()
