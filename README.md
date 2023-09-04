@@ -6,30 +6,48 @@ The modules used in the python chat application are opencv-python, tk, imutils, 
 
 ## Files and Basic Description:
 `basicchatclient.py` and `basicchatserver.py` - Text chat with terminal (For users and server respectively) **Handles 2 or more clients**
+
 `TextMsgClient.py` and `TextMsgServer.py` - Text chat client and server **Handles 2 or more clients**
+
 `TCPvideoclient.py` and `TCPvideoserver.py` - Streaming video with TCP. Client can only receive a feed from the server. This isn't implemented that well because UDP is a better choice for video. **Handles 1 client**
+
 `UDPvideoclient.py`, `UDPvideoclientTest.py`, and `UDPvideoserver.py` - Video chat client and server (The test client uses a particular video file as camera) **Handles only 2 clients**
+
 `TCPaudioclient.py` and `TCPaudioserver.py` - Voice chat client and server **Handles only 2 clients**
+
 `TextMsgVideoClient.py` and `TextMsgVideoServer.py` - Text & Video chat client and server **Handles only 2 clients**
+
 `ChatClient.py` and `ChatServer.py` - Text, Video, & Voice chat client and server **Handles only 2 clients**
 
 ## Instructions:
 After installing Python 3, run the following pip commands in a terminal. Make sure to do this before using any of the files otherwise they may not work.
 
 pip install virtualenv
+
 python -m venv venv
+
 source venv/Scripts/activate
+
 pip install opencv-python
+
 pip install tk
+
 pip install imutils
+
 pip install sockets
+
 pip install threaded
+
 pip install numpy
 
 For windows (pyaudio errors):
+
 pip install pipwin
+
 pipwin install pyaudio
 
 For linux (pyaudio errors and tk errors):
+
 sudo apt-get install python3-pyaudio
+
 sudo apt-get install python3-tk
