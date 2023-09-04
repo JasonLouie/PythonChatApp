@@ -2,7 +2,6 @@
 # Description: File for UDP video chat server
 
 import socket, time, threading
-from tkinter import *
 
 buffer_size = 65536
 host_ip = socket.gethostbyname(socket.gethostname())
