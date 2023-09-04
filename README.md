@@ -1,11 +1,9 @@
 # CS499-project
-Unoptimized Branch for Python Chat app
-Run the following in terminal before using any of the files (can just copy & paste)
-
-On git bash do the following steps:
-1. pip install virtualenv
-2. python -m venv venv
-3. source venv/Scripts/activate
+This is the Unoptimized Branch for Python Chat App.
+These implementations are the basic versions that work to some degree and include a lot of inefficiencies.
+For text, video, and voice chat, use ChatClient.py and ChatServer.py.
+After installing Python 3, run the following pip commands in a terminal.
+Make sure to do this before using any of the files otherwise they may not work.
 
 pip install virtualenv
 python -m venv venv
