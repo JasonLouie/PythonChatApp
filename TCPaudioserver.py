@@ -1,11 +1,11 @@
+# Filename: TCPaudioserver.py
+# Description: File for voice chat server
+# NOTE: This is an unoptimized implementation so some features may not work as desired.
+
 import socket, threading
 from tkinter import *
 
-# socket.gethostbyname(socket.gethostname())
-# The above line of code receives the ipv4 address of the client that this program is running on.
-# I had to change it to 192.168.1.171 since the line of code above started returning the wrong ipv4 address
-# This assumes that the server is being ran on my computer.
-host = '192.168.1.171'
+host = socket.gethostbyname(socket.gethostname())
 audioPort = 55777
 
 clients = []

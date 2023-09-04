@@ -1,11 +1,11 @@
+# Filename: UDPvideoserver.py
+# Description: File for UDP video chat server
+# NOTE: This is an unoptimized implementation so some features may not work as desired.
+
 import socket, threading, errno
 from tkinter import *
 
-# socket.gethostbyname(socket.gethostname())
-# The above line of code receives the ipv4 address of the client that this program is running on.
-# I had to change it to 192.168.1.171 since the line of code above started returning the wrong ipv4 address
-# This assumes that the server is being ran on my computer.
-host_ip = '192.168.1.171' # socket.gethostbyname(socket.gethostname())
+host_ip = socket.gethostbyname(socket.gethostname())
 buffer_size = 65536
 videoPort = 55666
 
@@ -26,7 +26,7 @@ class VideoServer:
     def start(self):
         self.video_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, buffer_size)
         self.video_socket.bind((host_ip, videoPort))
-        self.receive()
+        threading.Thread(target=self.receive).start()
     
     def shutdown(self):
         self.video_socket.close()

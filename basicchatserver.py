@@ -1,3 +1,7 @@
+# Filename: basicchatserver.py
+# Description: File for the terminal text chat server
+# NOTE: This is an unoptimized implementation so some features may not work as desired.
+
 import socket, threading
 
 host_ip = '192.168.1.171'

@@ -1,4 +1,6 @@
-# The following is a chat client that can send/receive messages using the terminal
+# Filename: basicchatclient.py
+# Description: File for terminal text chat (for users)
+# NOTE: This is an unoptimized implementation so some features may not work as desired.
 
 import socket, threading
 from tkinter import *
@@ -8,12 +10,15 @@ text_color = "#A9A9A9"
 bg_bottom = "#686A68"
 bg_entry = "#2C3E50"
 
+host_ip = socket.gethostbyname(socket.gethostname())
+port = 55555
+
 username = ""
 while not username:
     username = input("Enter a username: ")
 
 user = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-user.connect(('192.168.1.171', 55555))
+user.connect((host_ip, port))
 
 def receive():
     while True:

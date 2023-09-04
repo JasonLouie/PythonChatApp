@@ -1,10 +1,10 @@
-import threading,socket
+# Filename: TextMsgVideoServer.py
+# Description: File for text and video chat server
+# NOTE: This is an unoptimized implementation so some features may not work as desired.
 
-# socket.gethostbyname(socket.gethostname())
-# The above line of code receives the ipv4 address of the client that this program is running on.
-# I had to change it to 192.168.1.171 since the line of code above started returning the wrong ipv4 address
-# This assumes that the server is being ran on my computer.
-host = '192.168.1.171'
+import threading, socket
+
+host = socket.gethostbyname(socket.gethostname())
 chatPort = 55555
 videoPort = 55666
 buffer_size = 65536

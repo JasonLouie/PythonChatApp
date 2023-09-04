@@ -1,3 +1,7 @@
+# Filename: TextMsgVideoClient.py
+# Description: File for text and video chat client
+# NOTE: This is an unoptimized implementation so some features may not work as desired.
+
 import cv2, imutils, socket, numpy as np, time, threading
 from tkinter import *
 
@@ -5,7 +9,7 @@ bg_color = "#17202A"
 text_color = "#A9A9A9"
 bg_bottom = "#686A68"
 bg_entry = "#2C3E50"
-host_ip = '68.237.86.46'
+host_ip = socket.gethostbyname(socket.gethostname())
 chatPort = 55555
 videoPort = 55666
 buffer_size = 65536

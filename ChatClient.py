@@ -1,3 +1,7 @@
+# Filename: ChatClient.py
+# Description: File for text, video, and voice chat client
+# NOTE: This is an unoptimized implementation so some features may not work as desired.
+
 import cv2, imutils, socket, numpy as np, time, threading, pyaudio
 from tkinter import *
 
@@ -17,7 +21,7 @@ audio_format = pyaudio.paInt16
 channels = 1
 # Record at 44100 samples per second
 fs = 44100
-# Number of seconds to record (Send audio every 0.25 sec)
+# Number of seconds to record audio before sending
 seconds = 0.25
 
 class ChatClient:

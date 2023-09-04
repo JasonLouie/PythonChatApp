@@ -1,3 +1,7 @@
+# Filename: TCPvideoclient
+# Description: File for TCP video client that simply receives a feed from the server
+# Credits to pyshine (online website tutorial)
+
 import socket,cv2,pickle,struct
 
 # create socket

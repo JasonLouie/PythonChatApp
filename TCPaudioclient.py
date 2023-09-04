@@ -1,3 +1,7 @@
+# Filename: TCPaudioclient.py
+# Description: File for voice chat client
+# NOTE: This is an unoptimized implementation so some features may not work as desired.
+
 import pyaudio, socket, threading
 from tkinter import *
 
@@ -6,7 +10,7 @@ text_color = "#A9A9A9"
 bg_bottom = "#686A68"
 bg_entry = "#2C3E50"
 audioPort = 55777
-host_ip = '68.237.86.46'
+host_ip = socket.gethostbyname(socket.gethostname())
 # audio will be in chunks of 1024 sample
 chunk = 1024
 # 16 bits per sample

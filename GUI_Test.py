@@ -1,3 +1,7 @@
+# Filename: GUI_Test.py
+# Description: Testing code for creating client GUI
+# NOTE: This file is only in the Unoptimized Branch to showcase the steps in building the final version of ChatClient.py
+
 from tkinter import *
 
 bg_color = "#17202A"

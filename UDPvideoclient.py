@@ -1,3 +1,7 @@
+# Filename: UDPvideoclient.py
+# Description: File for UDP video chat client
+# NOTE: This is an unoptimized implementation so some features may not work as desired.
+
 import cv2, imutils, socket, numpy as np, time, threading
 from tkinter import *
 
@@ -6,7 +10,7 @@ text_color = "#A9A9A9"
 bg_bottom = "#686A68"
 bg_entry = "#2C3E50"
 buffer_size = 65536
-host_ip = '68.237.86.46'
+host_ip = socket.gethostbyname(socket.gethostname())
 port = 55666
 
 message = "First Time"

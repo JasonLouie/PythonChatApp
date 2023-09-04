@@ -1,3 +1,7 @@
+# Filename: TCPaudiotesting.py
+# Description: Testing pyaudio along with recording and playing audio from microphone
+# NOTE: This file is only in the Unoptimized Branch to showcase the steps in building the final version of ChatClient.py
+
 import pyaudio, threading
 from tkinter import *
 
