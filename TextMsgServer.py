@@ -1,12 +1,9 @@
-import threading, socket, time
-import cProfile, re
+# Filename: TextMsgServer.py
+# Description: File for text chat server
 
-# socket.gethostbyname(socket.gethostname())
-# The above line of code receives the ipv4 address of the client that this program is running on.
-# I had to change it to 192.168.1.171 since the line of code above started returning the wrong ipv4 address
-# This assumes that the server is being ran on my computer. Change it back to the commented line when using
-# or replace it with your own ipv4 address.
-host = '192.168.1.171'  # socket.gethostbyname(socket.gethostname())
+import threading, socket, time
+
+host = socket.gethostbyname(socket.gethostname())
 chatPort = 55555
 
 class User:

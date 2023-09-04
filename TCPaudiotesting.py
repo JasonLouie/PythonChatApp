@@ -1,7 +1,8 @@
+# Filename: TCPaudiotesting.py
+# Description: Testing pyaudio along with recording and playing audio from microphone
+
 import pyaudio, threading
 from tkinter import *
-
-# Testing pyaudio along with recording and playing audio from microphone
 
 bg_color = "#17202A"
 text_color = "#A9A9A9"

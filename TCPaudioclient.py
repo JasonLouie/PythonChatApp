@@ -1,3 +1,6 @@
+# Filename: TCPaudioclient.py
+# Description: File for voice chat client
+
 import pyaudio, socket, threading, time
 from tkinter import *
 
@@ -6,8 +9,9 @@ ping_color = "#6BFF64"
 text_color = "#A9A9A9"
 bg_bottom = "#686A68"
 bg_entry = "#2C3E50"
+
 audioPort = 55777
-host_ip = '96.250.48.132'
+host_ip = socket.gethostbyname(socket.gethostname())
 # audio will be in chunks of 1024 sample
 chunk = 1024
 # 16 bits per sample
@@ -15,7 +19,7 @@ audio_format = pyaudio.paInt16
 channels = 1
 # Record at 44100 samples per second
 fs = 44100
-# Number of seconds to record (Send audio every 0.25 sec)
+# Number of seconds to record audio before sending
 seconds = 0.1
 
 class AudioClient:

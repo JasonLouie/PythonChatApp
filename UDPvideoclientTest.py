@@ -1,3 +1,6 @@
+# Filename: UDPvideoclientTest.py
+# Description: File for UDP video chat client, but uses a video in place of a camera. Video file is not provided.
+
 import cv2, imutils, socket, numpy as np, time, threading
 from tkinter import *
 
@@ -6,14 +9,15 @@ text_color = "#A9A9A9"
 bg_bottom = "#686A68"
 bg_entry = "#2C3E50"
 buffer_size = 65536
-host_ip = '68.237.86.46'
+host_ip = socket.gethostbyname(socket.gethostname())
 port = 55666
 
+video_name = 'testvideo.mp4'
 message = "First Time"
 
 class VideoClient:
     def __init__ (self):
-        self.video = cv2.VideoCapture('testvideo.mp4')
+        self.video = cv2.VideoCapture(video_name)
         self.runThread = True
         self.showVideo = False
         self.showPreview = False

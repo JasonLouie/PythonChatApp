@@ -1,3 +1,7 @@
+# Filename: TCPvideoserver.py
+# Description: File for TCP video server that sends a video to a client
+# Credits to pyshine (online website tutorial)
+
 import socket, cv2, pickle, struct
 
 # Create server socket
