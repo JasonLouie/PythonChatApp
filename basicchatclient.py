@@ -21,7 +21,7 @@ def receive():
             message = user.recv(1024).decode('ascii')
             if message == "NAME":
                 user.send(username.encode('ascii'))
-            elif message:
+            else:
                 print(message)
         except:
             print("An error occurred!")
@@ -43,7 +43,7 @@ def write():
             break
 
 if __name__ == '__main__':
-    receive_thread = threading.Thread(target=receive)
+    receive_thread = threading.Thread(target=receive, daemon=True)
     receive_thread.start()
 
     write_thread = threading.Thread(target=write)

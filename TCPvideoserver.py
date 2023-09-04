@@ -30,3 +30,4 @@ while True:
             key = cv2.waitKey(1)
             if key == ord('q'):
                 client_socket.close()
+                cv2.destroyAllWindows()

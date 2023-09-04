@@ -1,5 +1,5 @@
 # CS499-project
-Unoptimized Branch for Python Chat app
+My files for CS project
 Run the following in terminal before using any of the files (can just copy & paste)
 
 On git bash do the following steps:
@@ -24,5 +24,3 @@ pipwin install pyaudio
 For linux (pyaudio errors and tk errors):
 sudo apt-get install python3-pyaudio
 sudo apt-get install python3-tk
-
-

@@ -1,15 +1,21 @@
-import threading,socket
+import threading, socket, time
+import cProfile, re
 
 # socket.gethostbyname(socket.gethostname())
 # The above line of code receives the ipv4 address of the client that this program is running on.
 # I had to change it to 192.168.1.171 since the line of code above started returning the wrong ipv4 address
-# This assumes that the server is being ran on my computer.
-host = '192.168.1.171'
+# This assumes that the server is being ran on my computer. Change it back to the commented line when using
+# or replace it with your own ipv4 address.
+host = '192.168.1.171'  # socket.gethostbyname(socket.gethostname())
 chatPort = 55555
 videoPort = 55666
 buffer_size = 65536
 
-clients = []
+# name refers to the user's username
+# text_socket refers to the user's TCP socket connection to TCP text chat
+# address refers to the return address of the user's UDP socket for video chat
+# UDP is connectionless so the server must append the return address of a user
+# to the particular user in the list self.clients
 
 class User:
     def __init__(self, name: str, text_socket: socket.socket):
@@ -17,6 +23,9 @@ class User:
         self.text_socket = text_socket
         self.address = ""
     
+    def setUsername(self, username: str):
+        self.username = username
+
     def setAddress(self, addr: str):
         self.address = addr
 
@@ -26,10 +35,10 @@ class User:
     def getAddress(self)->str:
         return self.address
     
-    def getTextSocket(self)->socket.socket:
-        return self.text_socket
+    def sendText(self, data: bytes):
+        self.text_socket.send(data)
     
-    def endConnection(self)->socket.socket:
+    def endConnection(self):
         self.text_socket.close()
 
 class Server:
@@ -38,6 +47,10 @@ class Server:
         self.text_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # UDP socket for video streaming server
         self.video_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        self.runThread = True
+        # List of clients in the server
+        self.clients = []
     
     # Start server
     def start(self):
@@ -50,116 +63,169 @@ class Server:
         self.video_server.bind((host, videoPort))
 
         # Handle packets of data for receiving video data within the UDP Server
-        handleVideo_thread = threading.Thread(target=self.videoReceive)
+        handleVideo_thread = threading.Thread(target=self.videoReceive, daemon=True)
         handleVideo_thread.start()
-        self.receive()
+        
+        # Create a thread for accepting users into the text chat server
+        handleChatJoin_thread = threading.Thread(target=self.receive, daemon=True)
+        handleChatJoin_thread.start()
+
+        # Run input on the main thread. Typing anything but ^C will shut the server properly.
+        self.checkForExit()
     
+    # Wait for user input on the server-side and use this as a way to shutdown the server
+    # This works because the only line of code running on the main thread is the input command and after
+    # there is input, the server will shutdown. Since all the other threads are daemon threads, they will
+    # also terminate as soon as the main thread ends.
+    def checkForExit(self):
+        while True:
+            try:
+                input("Enter Ctrl + C to shutdown server\n")
+            except KeyboardInterrupt:
+                self.runThread = False
+                self.shutdown()
+                break
+
+    # Function for handling user ping
+    def writeRecvPing(self, ping: float)->str:
+        now = time.time()
+        return f"Ping: {((now-ping)*1000):.2f}"
+
+    # Check for repeated usernames
+    # Returns false if the username is not taken and true if it is taken
+    def takenUsername(self, username: str)->bool:
+        # Check all clients and if name is not taken then return false
+        for client in self.clients:
+            if client.getUsername() == username:
+                return True
+        return False
+    
+    # Function used for obtaining valid username from user
+    def getValidUsername(self, user: socket.socket)->str:
+        username = user.recv(1024).decode('ascii')
+        while self.takenUsername(username):
+            user.send("#TAKEN#".encode('ascii'))
+            username = user.recv(1024).decode('ascii')
+        user.send("Connected to the server!".encode('ascii'))
+        return username
+
     # Shutdown server
     def shutdown(self):
         print("Shutting Down...")
+        self.broadcast("#CLOSING#".encode('ascii'), allClients=True)
         self.text_server.close()
         self.video_server.close()
 
-    # Send a message to all clients
-    def broadcast(self, message: bytes):
-        for client in clients:
-            client.getTextSocket().send(message)
-    
-    # Send a message to all but a specified client
-    # Called whenever a user sends a message to prevent receiving a repeated message
-    def sendMessage(self, message: bytes, user: socket.socket):
-        for client in clients:
-            if client.getTextSocket() != user:
-                client.getTextSocket().send(message)
+    # Functionalities:
+    # Send a message to all but sender
+    # Send messages to all valid clients
+    # Send messages to ALL clients (even the clients in the middle of entering username)
+    def broadcast(self, message: bytes, sender = "", allClients = False):
+        for client in self.clients:
+            if (client.getUsername() != sender and client.getUsername()) or allClients:
+                try:
+                    client.sendText(message)
+                except:
+                    client.endConnection()
+                    self.clients.remove(client)
     
     # Find a particular client from their username
     def findClient(self, username: str)->User:
-        for client in clients:
+        for client in self.clients:
             if username == client.getUsername():
                 return client
-        return User("", socket.socket())
+        # Return a null client if the client does not exist
+        return User("",socket.socket())
 
     # Send video to all clients but the sender
-    def sendVideo(self, addr: str, packet: bytes):
+    def broadcastVideo(self, addr: str, packet: bytes, numClients=2):
         # No need to send video if there is only one client in the server
-        if len(clients) >= 2:
-            for client in clients:
-                if client.getAddress() != addr:
+        if len(self.clients) >= numClients:
+            for client in self.clients:
+                if client.getAddress() != addr and client.getAddress() != "":
                     self.video_server.sendto(packet, client.getAddress())
     
     # Function for handling a new user
-    def handle(self, user: socket.socket):
+    def handle(self, user: User, userSocket: socket.socket):
         # Attempt to assign a username to a new user
         try:
-            user.send('NAME'.encode('ascii'))
-            username = user.recv(1024).decode('ascii')
-            newUser = User(username, user)
-            clients.append(newUser)
+            user.sendText("#NAME#".encode('ascii'))
+            username = self.getValidUsername(userSocket)
+            user.setUsername(username)
             print(f"Username of the client is {username}!")
-            self.broadcast(f'{username} joined the chat!'.encode('ascii'))
-            user.send("Connected to the server!".encode('ascii'))
+            self.broadcast(f'{username} joined the chat!'.encode('ascii'), sender=username)
         # If a nickname was not received by the server, they disconnected before entering a username
         except:
             print("User disconnected before entering a username")
-            user.close()
+            self.clients.remove(user)
+            user.endConnection()
             return
 
-        # Create thread to handle video; see comments on top of function self.videoReceive
-        handleVideo_thread = threading.Thread(target=self.videoReceive)
-        handleVideo_thread.start()
-
         # Manage sending and receiving messages from a specific user
-        while True:
+        while self.runThread:
             # Receive message and send it to all users while ensuring the user does not receive the repeated message
             try:
-                message = user.recv(1024)
-                self.sendMessage(message, user)
+                message = userSocket.recv(1024)
+                if message[0:6].decode('ascii') == "#PING:":
+                    ping = self.writeRecvPing(float(message[6:]))
+                    user.sendText(f"T-{ping}".encode('ascii'))
+                else:
+                    self.broadcast(message, sender=username)
             # Remove the client that sends a failed message
             # This is when the client terminates its socket, thus terminating its connection to the server
             except:
-                clients.remove(newUser)
-                newUser.endConnection()
-                self.broadcast(f'{newUser.getUsername()} left the chat!'.encode('ascii'))
-                print(f'{newUser.getUsername()} left the chat!')
+                self.clients.remove(user)
+                user.endConnection()
+                self.broadcast(f"{username} left the chat!".encode('ascii'))
+                print(f"{username} left the chat!")
                 break
     
     # Function for accepting new clients into the TCP text server
     def receive(self):
-        try:
-            while True:
-                user, address = self.text_server.accept()
+        while self.runThread:
+            try:
+                socket, address = self.text_server.accept()
                 print(f"Connected with {str(address)}")
-                handleUser_thread = threading.Thread(target=self.handle, args=(user,))
-                handleUser_thread.start()
-        except KeyboardInterrupt:
-            print("Shutting down...")
-            self.shutdown()
+                newUser = User("", socket)
+                self.clients.append(newUser)
+                handleUserChat_thread = threading.Thread(target=self.handle, args=(newUser,socket,), daemon=True)
+                handleUserChat_thread.start()
+            except:
+                break
 
     # Function that handles receiving data within the UDP server for video streaming
-    # Called through the creation of a thread. An initial thread is created while starting the server.
-    # These videoReceive threads are generic and ensures that at least one is running at all times.
-    # It must be able to handle all of the specific conditions such as updating a user on the server's side with their specific return address.
-    # The socket function recvfrom simply receives data without much regard for who the sender is.
-    # What I mean by this is that this function returns two parameters: data and sender's return address, but the server has no way of
-    # ensuring that a particular client is sending data to the server. This means that in a server of 2 clients for instance, the packets of data
-    # can be received in any of the three threads of videoReceive running in the background of the server.
+    # Called through the creation of a thread. It must be able to handle all of the specific conditions
+    # such as updating a user on the server's side with their specific return address.
+    # The socket function recvfrom simply receives data and cannot choose to receive data from a particular sender.
+    # What I mean by this is that recvfrom returns two parameters: data and sender's return address, but the server has no way of
+    # ensuring that a specific client is sending data to the server. Because of this, only one videoReceive thread is required
+    # while TCP requires every client to have its own handling thread for receiving data.
     def videoReceive(self):
-        while True:
-            packet,addr = self.video_server.recvfrom(buffer_size)
-            # Check whether the packet is a string (decodable in ascii?)
+        while self.runThread:
             try:
-                msg = packet.decode('ascii')
-                # Update address of client for streaming video (this return address is used to send video data)
-                if msg[0:6] == "FIRST:":
-                    client = self.findClient(msg[6:])
-                    if client.getUsername():
-                        client.setAddress(addr)
-                # End thread for receiving video when user disconnects
-                elif msg == "BYE":
-                    break
-            # If packet cannot be decoded with ascii it is encoded as jpg and can be sent to other clients
+                packet,addr = self.video_server.recvfrom(buffer_size)
+                # Check whether the packet is a string (decodable in ascii?)
+                try:
+                    msg = packet.decode('ascii')
+                    # Update address of client for streaming video (this return address is used to send video data)
+                    if msg[0:6] == "FIRST:":
+                        client = self.findClient(msg[6:])
+                        # If the client was found, update address
+                        if client.getUsername():
+                            client.setAddress(addr)
+                    elif msg == "START":
+                        self.broadcastVideo(addr, "#START#".encode('ascii'))
+                    elif msg == "END":
+                        self.broadcastVideo(addr, "#STOP#".encode('ascii'), 1)
+                    elif msg[0:6] == "#PING:":
+                        ping = self.writeRecvPing(float(msg[6:]))
+                        self.video_server.sendto(f"V-{ping}".encode('ascii'),addr)
+                        
+                # If packet cannot be decoded with ascii it is encoded as jpg and can be sent to other clients
+                except:
+                    self.broadcastVideo(addr, packet)
             except:
-                self.sendVideo(addr, packet)
+                break
         
 if __name__ == '__main__':
     server = Server()

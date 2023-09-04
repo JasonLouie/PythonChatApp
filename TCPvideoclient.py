@@ -2,7 +2,7 @@ import socket,cv2,pickle,struct
 
 # create socket
 client_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-host_ip = socket.gethostbyname(socket.gethostname())
+host_ip = '96.250.48.132'
 port = 9999
 client_socket.connect((host_ip,port))
 data = b""
@@ -11,7 +11,8 @@ payload_size = struct.calcsize("Q")
 while True:
     while len(data) < payload_size:
         packet = client_socket.recv(4096) # 4K
-        if not packet: break
+        if not packet: 
+            break
         data+=packet
     packed_msg_size = data[:payload_size]
     data = data[payload_size:]
@@ -27,4 +28,5 @@ while True:
     if key == ord('q'):
         break
 
+cv2.destroyAllWindows()
 client_socket.close()

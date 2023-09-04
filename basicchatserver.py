@@ -1,69 +1,99 @@
-import socket, threading
+import socket, threading, time, subprocess
 
 host_ip = '192.168.1.171'
 port = 55555
 
-text_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+class User:
+    def __init__(self, name: str, text_socket: socket.socket):
+        self.username = name
+        self.text_socket = text_socket
 
-usernames = []
-clients = []
-
-def run():
-    print(f"Listening for connections at {host_ip}...")
-    text_server.bind((host_ip,port))
-    text_server.listen()
-    receive()
+    def getUsername(self)->str:
+        return self.username
     
-# Send a message to all clients
-def broadcast(message: bytes):
-    for client in clients:
-        client.send(message)
+    def sendText(self, data: bytes):
+        self.text_socket.send(data)
     
-# Send a message to all but a specified client
-# Called whenever a user sends a message to prevent receiving a repeated message
-def sendMessage(message, user: socket):
-    for client in clients:
-        if client != user:
-            client.send(message)
+    def endConnection(self):
+        self.text_socket.close()
 
-def handle(user: socket.socket, username: str):
-    # Manage sending and receiving messages from a specific user
-    while True:
-        # Receive message and send it to all users while ensuring the user does not receive the repeated message
-        try:
-            message = user.recv(1024)
-            sendMessage(message, user)
-        # Remove the client that sends a failed message
-        # This is when the client terminates its socket, thus terminating its connection to the server
-        except:
-            clients.remove(user)
-            usernames.remove(username)
-            user.close()
-            broadcast(f"{username} left the chat!".encode('ascii'))
-            print(f"{username} left the chat!")
-            break
+class Server:
+    def __init__(self):
+        self.text_server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.clients = []
 
-# Function for accepting new clients into the TCP text server
-def receive():
-    while True:
-        user, address = text_server.accept()
-        print(f"Connected with {str(address)}")
-        # Attempt to assign a username to a new user
-        try:
-            user.send("NAME".encode('ascii'))
-            username = user.recv(1024).decode('ascii')
-            usernames.append(username)
-            clients.append(user)
-            print(f"Username of the client is {username}!")
-            sendMessage(f"{username} joined the chat!".encode('ascii'), username)
-            user.send("Connected to the server!".encode('ascii'))
-            handleUserChat_thread = threading.Thread(target=handle, args=(user, username,))
-            handleUserChat_thread.start()
-        # If a nickname was not received by the server, they disconnected before entering a username
-        except Exception as e:
-            print(e)
-            print("User disconnected before entering a username")
-            user.close()
+    def run(self):
+        print(f"Listening for connections at {host_ip}...")
+        self.text_server.bind((host_ip,port))
+        self.text_server.listen()
+        receiveThread = threading.Thread(target=self.receive, daemon=True)
+        receiveThread.start()
+
+        self.checkForExit()
+    
+    # Shutdown server
+    def shutdown(self):
+        print("Shutting Down...")
+        self.broadcast("#CLOSING#".encode('ascii'))
+        self.text_server.close()
+
+    # Wait for user input on the server-side and use this as a way to shutdown the server
+    # This works because the only line of code running on the main thread is the input command and after
+    # there is input, the server will shutdown. Since all the other threads are daemon threads, they will
+    # also terminate as soon as the main thread ends.
+    def checkForExit(self):
+        input("Press enter to shutdown server\n")
+        self.shutdown()
+
+    def broadcast(self, message: bytes, sender=""):
+        for client in self.clients:
+            if client.getUsername() != sender:
+                client.sendText(message)
+
+    def handle(self, user: socket.socket):
+            # Attempt to assign a username to a new user
+            try:
+                user.send("NAME".encode('ascii'))
+                username = user.recv(1024).decode('ascii')
+                newUser = User(username, user)
+                self.clients.append(newUser)
+                print(f"Username of the client is {username}!")
+                self.broadcast(f"{username} joined the chat!".encode('ascii'))
+                user.send("Connected to the server!".encode('ascii'))
+            # If a nickname was not received by the server, they disconnected before entering a username
+            except:
+                print("User disconnected before entering a username")
+                user.close()
+                return
+
+            # Manage sending and receiving messages from a specific user
+            while True:
+                # Receive message and send it to all users while ensuring the user does not receive the repeated message
+                try:
+                    message = user.recv(1024)
+                    self.broadcast(message, username)
+                # Remove the client that sends a failed message
+                # This is when the client terminates its socket, thus terminating its connection to the server
+                except:
+                    self.clients.remove(newUser)
+                    newUser.endConnection()
+                    self.broadcast(f'{newUser.getUsername()} left the chat!'.encode('ascii'))
+                    print(f'{newUser.getUsername()} left the chat!')
+                    break
+
+    # Function for accepting new clients into the TCP text server
+    def receive(self):
+        while True:
+            try:
+                user, address = self.text_server.accept()
+                print(f"Connected with {str(address)}")
+                handleUserChat_thread = threading.Thread(target=self.handle, args=(user,))
+                handleUserChat_thread.daemon = True
+                handleUserChat_thread.start()
+            except:
+                break
+
 
 if __name__ == '__main__':
-    run()
+    server = Server()
+    server.run()
